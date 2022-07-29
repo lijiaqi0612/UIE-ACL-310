@@ -8,8 +8,9 @@
 2. 然后使用 paddle2onnx.command.c_paddle_to_onnx方法将paddle的模型转为onnx模型 
 3. 因现在的onnx模型是动态的shape和散乱的算子形态，需要使用paddle自带的工具paddle2onnx.optimize将onnx模型先进行重塑，固定好shape的维度，将散乱的算子进行整合
 
-    命令如下： 
+    - 命令如下： 
+    ```
     $ python -m paddle2onnx.optimize --input_model /home/user/lijiaqi/PaddleNLP/model_zoo/uie/export_new/model.onnx --output_model /home/user/lijiaqi/model_new_uie.onnx --input_shape_dict "{'att_mask':[1,512],'pos_ids':[1,512],'token_type_ids':[1,512],'input_ids':[1,512]}"  
-
+    ```
 4. 然后将onnx模型在使用ATC工具转为acl所需要的om模型
 5. 另外在使用acl部署的时候，paddle框架是不能使用的，acl使用到的模型和训练过程均需要自己实现，包括from_pretrain阶段的分词，建立词表，数据处理部分，这部分我已经实现完，纯python版本的实现
