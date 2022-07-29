@@ -4,7 +4,6 @@ import struct
 import acl
 import os
 from constant import MemcpyType, MallocType, NpyType
-# from util import *
 
 
 WORK_DIR = os.getcwd()
@@ -16,26 +15,16 @@ NPY_FLOAT32 = 11
 
 ret = acl.init()
 
-# GLOBAL
 load_input_dataset = None
 load_output_dataset = None
 input_data = []
 output_data = []
-_output_info = []
-# images_list = []
 model_desc = 0
 run_mode = 0
 INDEX = 0
-
+ 
 # MODEL_PATH = "/root/lijiaqi/UIE/model/h12m0.om"
-MODEL_PATH = "/root/lijiaqi/UIE/model/model_tiny_out.om"
-
-# if WORK_DIR.find("src") == -1:
-#     MODEL_PATH = WORK_DIR + "/src/model/googlenet_yuv.om"
-#     DATA_PATH = WORK_DIR + "/src/data"
-# else:
-#     MODEL_PATH = WORK_DIR + "/model/googlenet_yuv.om"
-#     DATA_PATH = WORK_DIR + "/data"
+MODEL_PATH = "/root/lijiaqi/UIE/flask/model/model_uie_v2.om"
 
 buffer_method = {
     "in": acl.mdl.get_input_size_by_index,
@@ -84,10 +73,6 @@ def gen_data_buffer(num, des):
     global model_desc
     func = buffer_method[des]
     for i in range(num):
-        #temp_buffer_size = (model_desc, i)
-        # temp_buffer_size  = acl.mdl.get_output_size_by_index(model_desc, i)
-        # temp_buffer, ret = acl.rt.malloc(temp_buffer_size, MallocType.ACL_MEM_MALLOC_NORMAL_ONLY.value)
-        # check_ret("acl.rt.malloc", ret)
         if des == "in":
             temp_buffer_size  = acl.mdl.get_input_size_by_index(model_desc, i)
             temp_buffer, ret = acl.rt.malloc(temp_buffer_size, MallocType.ACL_MEM_MALLOC_HUGE_FIRST.value)
@@ -107,20 +92,6 @@ def malloc_device(input_num, output_num):
     gen_data_buffer(output_num, des="out")
 
 
-# def _data_interaction_in(dataset):
-#     global input_data
-#     temp_data_buffer = input_data
-#     for i in range(len(temp_data_buffer)):
-#         item = temp_data_buffer[i]
-#         ptr = acl.util.numpy_to_ptr(dataset)
-#         ret = acl.rt.memcpy(item["buffer"],
-#                             item["size"],
-#                             ptr,
-#                             item["size"],
-#                             ACL_MEMCPY_HOST_TO_DEVICE)
-#         check_ret("acl.rt.memcpy", ret)
-#     print("data_interaction_in success")
-
 def _data_interaction_in(model_input_ids, model_token_type_ids, model_position_ids, model_attention_mask):
     global input_data
     temp_data_buffer = input_data
@@ -128,12 +99,6 @@ def _data_interaction_in(model_input_ids, model_token_type_ids, model_position_i
     model_token_type_ids_np_ptr = acl.util.numpy_to_ptr(model_token_type_ids)
     model_position_ids_np_ptr = acl.util.numpy_to_ptr(model_position_ids)
     model_attention_mask_np_ptr = acl.util.numpy_to_ptr(model_attention_mask)
-
-    # print(model_input_ids)
-    # print(model_token_type_ids)
-    # print(model_position_ids)
-    # print(model_attention_mask)
-    # exit()
 
     ret = acl.rt.memcpy(temp_data_buffer[0]["buffer"], temp_data_buffer[0]["size"], model_attention_mask_np_ptr, temp_data_buffer[0]["size"], ACL_MEMCPY_HOST_TO_DEVICE)
     ret1 = acl.rt.memcpy(temp_data_buffer[1]["buffer"], temp_data_buffer[1]["size"], model_position_ids_np_ptr, temp_data_buffer[1]["size"], ACL_MEMCPY_HOST_TO_DEVICE)
@@ -226,15 +191,6 @@ def print_result(result):
         ptr = temp["buffer"]
         data = acl.util.ptr_to_numpy(ptr, (1, 512), NPY_FLOAT32)
         dataset.append(data)
-    
-    # print(dataset)
-    # print(len(dataset))
-    # print(len(dataset[0]))
-    # print(dataset[0], type(dataset[0]))
-    # print(dataset[1])
-    # print(dataset[0][0][:20])
-    # print(dataset[0][1][:20])
-    # exit()
 
     start_probs = []
     end_probs = []
@@ -248,21 +204,6 @@ def print_result(result):
 
     return start_probs, end_probs
 
-            
-    # # predictorV2 = UIEPredictor(512, 2, schema1, position_prob=0.5) 
-    # temp = predictor.predict(texts, 'out', start_probs=start_probs, end_probs=end_probs)
-
-    # print(temp)
-    # st = struct.unpack("1000f", bytearray(dataset[0]))
-    # vals = np.array(st).flatten()
-    # top_k = vals.argsort()[-1:-6:-1]
-    # print()
-    # print("======== image: {} =============".format(images_list[INDEX]))
-    # print("======== top5 inference results: =============")
-    # INDEX+=1
-    # for n in top_k:
-    #     object_class = get_image_net_class(n)
-    #     print("label:%d  confidence: %f, class: %s" % (n, vals[n], object_class))
 
 def release(model_id, context):
     global input_data, output_data
@@ -284,67 +225,3 @@ def release(model_id, context):
     check_ret("acl.rt.reset_device", ret)
     # print('release source success')
     
-
-
-# def main():
-#     global input_data 
-#     #init()
-#     context = allocate_res(0)
-#     model_id = load_model(MODEL_PATH) 
-#     print("model_id:{}".format(model_id))
-#     input_num, output_num = get_model_data(model_id)
-#     malloc_device(input_num, output_num) 
-#     # dvpp = Dvpp()
-#     # img_list = image_process_dvpp(dvpp)
-#     device = 0
-
-#     # texts = [
-#     #     '"北京市海淀区人民法院\n民事判决书\n(199x)建初字第xxx号\n原告：张三。\n委托代理人李四，北京市 A律师事务所律师。\n被告：B公司，法定代表人王五，开发公司总经理。\n委托代理人赵六，北京市 C律师事务所律师。"',
-#     #     '原告赵六，2022年5月29日生\n委托代理人孙七，深圳市C律师事务所律师。\n被告周八，1990年7月28日出生\n委托代理人吴九，山东D律师事务所律师'
-#     # ]
-#     # schema1 = ['法院', {'原告': '委托代理人'}, {'被告': '委托代理人'}]
-#     # schema2 = [{'原告': ['出生日期', '委托代理人']}, {'被告': ['出生日期', '委托代理人']}]
-#     texts = ['2月8日上午北京冬奥会自由式滑雪女子大跳台决赛中中国选手谷爱凌以188.25分获得金牌！', '']
-#     schema1 = ['时间', '选手', '赛事名称']
-#     # schema1 = {'竞赛名称': ['主办方', '承办方', '已举办次数']}
-#     result_type = 'in'
-#     predictor = UIEPredictor(512, 2, schema1, position_prob=0.5)
-#     print("-----------------------------")
-#     outputs = predictor.predict(texts, result_type)
-
-#     model_input_ids_list = outputs['input_ids'].astype(np.int64)
-#     model_token_type_ids_list = outputs['token_type_ids'].astype(np.int64)
-#     model_position_ids_list = outputs['pos_ids'].astype(np.int64)
-#     model_attention_mask_list = outputs['att_mask'].astype(np.int64)
-
-    
-#     # for i in range(len(model_input_ids_list)):
-#     #     sample.forward(model_input_ids_list[i], model_token_type_ids_list[i], model_position_ids_list[i], model_attention_mask_list[i])
-
-
-
-
-#     # for i in range(len(model_input_ids_list)):
-#     #     # image_data = {"buffer":image.data(), "size":image.size}   
-        
-#     #     _data_interaction_in(model_input_ids_list[i], model_token_type_ids_list[i], model_position_ids_list[i], model_attention_mask_list[i])
-#     #     _gen_dataset("in")
-#     #     _gen_dataset("out")
-#     #     inference(model_id, load_input_dataset, load_output_dataset)
-#     #     _destroy_data_set_buffer()
-#     #     res = []
-#     #     _data_interaction_out(res)
-#     #     print_result(res)
-#     _data_interaction_in(model_input_ids_list, model_token_type_ids_list, model_position_ids_list, model_attention_mask_list)
-#     _gen_dataset("in")
-#     _gen_dataset("out")
-#     inference(model_id, load_input_dataset, load_output_dataset)
-#     _destroy_data_set_buffer()
-#     res = []
-#     _data_interaction_out(res)
-#     print_result(res, texts, schema1, predictor)
-#     release(model_id,context)
-
-# if __name__ == '__main__':
-#     main()
-

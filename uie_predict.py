@@ -3570,20 +3570,6 @@ class UIEPredictor(object):
             start_probs.extend(starts)
             end_probs.extend(ends)
 
-            # start_prob, end_prob = self._infer(input_dict)
-            # print(start_prob[0][:5], '\n', start_prob[1][:5])
-            # print("============================================")
-            # print(end_prob[0][:5], '\n', end_prob[1][:5])
-            # exit()
-
-            
-            # start_prob = start_prob.tolist()
-            # end_prob = end_prob.tolist()
-            # start_probs.extend(start_prob)
-            # end_probs.extend(end_prob)
-
-        # print(len(start_probs), start_probs)
-
         start_ids_list = get_bool_ids_greater_than(start_probs,
                                                    limit=self._position_prob,
                                                    return_prob=True)
@@ -3857,7 +3843,6 @@ class SchemaTree(object):
     """
     Implementataion of SchemaTree
     """
-
     def __init__(self, name='root', children=None):
         self.name = name
         self.children = []
@@ -3880,13 +3865,6 @@ class SchemaTree(object):
 def get_bool_ids_greater_than(probs, limit=0.5, return_prob=False):
     """
     Get idx of the last dimension in probability arrays, which is greater than a limitation.
-
-    Args:
-        probs (List[List[float]]): The input probability arrays.
-        limit (float): The limitation for probability.
-        return_prob (bool): Whether to return the probability
-    Returns:
-        List[List[int]]: The index of the last dimension meet the conditions.
     """
     probs = np.array(probs)
     dim_len = len(probs.shape)
@@ -3909,13 +3887,6 @@ def get_bool_ids_greater_than(probs, limit=0.5, return_prob=False):
 def get_span(start_ids, end_ids, with_prob=False):
     """
     Get span set from position start and end list.
-
-    Args:
-        start_ids (List[int]/List[tuple]): The start index list.
-        end_ids (List[int]/List[tuple]): The end index list.
-        with_prob (bool): If True, each element for start_ids and end_ids is a tuple aslike: (index, probability).
-    Returns:
-        set: The span set without overlapping, every id can only be used once .
     """
     if with_prob:
         start_ids = sorted(start_ids, key=lambda x: x[0])
@@ -4008,12 +3979,6 @@ INDEX = 0
 
 def main():
     global input_data 
-    # context = allocate_res(0)
-    # model_id = load_model(MODEL_PATH) 
-    # print("model_id:{}".format(model_id))
-    # input_num, output_num = get_model_data(model_id)
-    # malloc_device(input_num, output_num) 
-
 
     # texts = [
     #     '"北京市海淀区人民法院\n民事判决书\n(199x)建初字第xxx号\n原告：张三。\n委托代理人李四，北京市 A律师事务所律师。\n被告：B公司，法定代表人王五，开发公司总经理。\n委托代理人赵六，北京市 C律师事务所律师。"',
@@ -4034,20 +3999,6 @@ def main():
     outputs = predictor.predict(texts)
     print(outputs)
 
-    # model_input_ids_list = outputs['input_ids'].astype(np.int64)
-    # model_token_type_ids_list = outputs['token_type_ids'].astype(np.int64)
-    # model_position_ids_list = outputs['pos_ids'].astype(np.int64)
-    # model_attention_mask_list = outputs['att_mask'].astype(np.int64)
-
-    # _data_interaction_in(model_input_ids_list, model_token_type_ids_list, model_position_ids_list, model_attention_mask_list)
-    # _gen_dataset("in")
-    # _gen_dataset("out")
-    # inference(model_id, load_input_dataset, load_output_dataset)
-    # _destroy_data_set_buffer()
-    # res = []
-    # _data_interaction_out(res)
-    # print_result(res, texts, schema1, predictor)
-    # release(model_id,context)
 
 if __name__ == '__main__':
     main()
