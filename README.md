@@ -10,7 +10,7 @@
 
     - 命令如下： 
     ```
-    $ python -m paddle2onnx.optimize --input_model /home/user/lijiaqi/PaddleNLP/model_zoo/uie/export_new/model.onnx --output_model /home/user/lijiaqi/model_new_uie.onnx --input_shape_dict "{'att_mask':[1,512],'pos_ids':[1,512],'token_type_ids':[1,512],'input_ids':[1,512]}"  
+    $ python -m paddle2onnx.optimize --input_model PaddleNLP/model_zoo/uie/export_new/model.onnx --output_model ./model_new_uie.onnx --input_shape_dict "{'att_mask':[1,512],'pos_ids':[1,512],'token_type_ids':[1,512],'input_ids':[1,512]}"  
     ```
 4. 然后将onnx模型在使用ATC工具转为acl所需要的om模型
 5. 另外在使用acl部署的时候，paddle框架是不能使用的，acl使用到的模型和训练过程均需要自己实现，包括from_pretrain阶段的分词，建立词表，数据处理部分，这部分我已经实现完，纯python版本的实现
